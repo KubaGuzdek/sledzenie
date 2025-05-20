@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>King Of theBay - Panel Organizatora</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="organizer-container">
+        <!-- Sidebar -->
+        <div class="organizer-sidebar">
+            <div class="organizer-sidebar-header">
+                <img src="img/logo.png" alt="Logo" class="app-logo">
+                <h1>King Of theBay</h1>
+            </div>
+            
+            <div class="organizer-sidebar-content">
+                <h3>Uczestnicy</h3>
+                <div class="participant-list" id="participant-list">
+                    <div style="text-align: center; color: #5f6368; margin-top: 30px;">
+                        <i class="fas fa-users" style="font-size: 32px; margin-bottom: 10px; opacity: 0.5;"></i>
+                        <p>Brak uczestników</p>
+                    </div>
+                </div>
+                
+                <h3 class="mt-3">Wyścig</h3>
+                <div id="race-info">
+                    <div style="background-color: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <div style="font-weight: 500;">Status:</div>
+                            <div id="race-status">Brak aktywnego wyścigu</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <div style="font-weight: 500;">Czas:</div>
+                            <div id="race-time">00:00</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <div style="font-weight: 500;">Uczestnicy:</div>
+                            <div id="race-participants">0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="race-controls mt-2">
+                        <button class="btn btn-success" id="start-race-btn" disabled>
+                            <i class="fas fa-play"></i> Start
+                        </button>
+                        <button class="btn btn-warning" id="pause-race-btn" disabled>
+                            <i class="fas fa-pause"></i> Pauza
+                        </button>
+                        <button class="btn btn-danger" id="end-race-btn" disabled>
+                            <i class="fas fa-stop"></i> Koniec
+                        </button>
+                    </div>
+                    
+                    <button class="btn btn-primary mt-2" id="new-race-btn">
+                        <i class="fas fa-plus"></i> Nowy wyścig
+                    </button>
+                </div>
+                
+                <h3 class="mt-3">Komunikaty</h3>
+                <div class="notification-form">
+                    <div class="form-group">
+                        <label class="form-label" for="notification-title">Tytuł</label>
+                        <input type="text" id="notification-title" class="form-input" placeholder="Wprowadź tytuł">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="notification-message">Treść</label>
+                        <textarea id="notification-message" class="form-input" rows="3" placeholder="Wprowadź treść komunikatu"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="notification-type">Typ</label>
+                        <select id="notification-type" class="form-input">
+                            <option value="info">Informacja</option>
+                            <option value="success">Sukces</option>
+                            <option value="warning">Ostrzeżenie</option>
+                            <option value="error">Błąd</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="notification-recipient">Odbiorca</label>
+                        <select id="notification-recipient" class="form-input">
+                            <option value="all">Wszyscy uczestnicy</option>
+                            <option value="active">Aktywni uczestnicy</option>
+                            <option value="selected">Wybrany uczestnik</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="selected-participant-group" style="display: none;">
+                        <label class="form-label" for="selected-participant">Wybierz uczestnika</label>
+                        <select id="selected-participant" class="form-input">
+                            <option value="">Wybierz uczestnika</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn btn-primary" id="send-notification-btn">
+                        <i class="fas fa-paper-plane"></i> Wyślij komunikat
+                    </button>
+                </div>
+                
+                <h3 class="mt-3">Alerty SOS</h3>
+                <div class="sos-list" id="sos-list">
+                    <div style="text-align: center; color: #5f6368; margin-top: 30px;">
+                        <i class="fas fa-life-ring" style="font-size: 32px; margin-bottom: 10px; opacity: 0.5;"></i>
+                        <p>Brak alertów SOS</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="organizer-sidebar-footer">
+                <button class="btn btn-danger" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Wyloguj się
+                </button>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="organizer-main">
+            <div class="organizer-header">
+                <h2>Śledzenie uczestników</h2>
+                <div id="connection-status">
+                    <i class="fas fa-wifi status-bad"></i>
+                    <span>Rozłączony</span>
+                </div>
+            </div>
+            
+            <div class="organizer-content">
+                <div class="organizer-map" id="map">
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #5f6368;">
+                        <i class="fas fa-map-marker-alt" style="font-size: 48px; margin-bottom: 20px;"></i>
+                        <h3>Mapa śledzenia</h3>
+                        <p>Tutaj będą wyświetlani uczestnicy</p>
+                    </div>
+                </div>
+                
+                <div class="organizer-controls" id="participant-details" style="display: none;">
+                    <h3>Szczegóły uczestnika</h3>
+                    <div style="background-color: white; border-radius: 8px; padding: 15px; margin: 15px 0; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                            <div id="participant-color" style="width: 20px; height: 20px; border-radius: 50%; background-color: #1a73e8; margin-right: 10px;"></div>
+                            <div>
+                                <div id="participant-name" style="font-weight: 500; font-size: 18px;">Imię i nazwisko</div>
+                                <div id="participant-sail" style="color: #5f6368; font-size: 14px;">POL-000</div>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <div style="font-weight: 500;">Status:</div>
+                            <div id="participant-status">Nieaktywny</div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <div style="font-weight: 500;">Prędkość:</div>
+                            <div id="participant-speed">0.0 km/h</div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <div style="font-weight: 500;">Dystans:</div>
+                            <div id="participant-distance">0.0 km</div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between;">
+                            <div style="font-weight: 500;">Ostatnia aktualizacja:</div>
+                            <div id="participant-last-update">-</div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn" id="send-direct-notification-btn">
+                        <i class="fas fa-paper-plane"></i> Wyślij komunikat
+                    </button>
+                    
+                    <button class="btn btn-primary mt-2" id="center-map-btn">
+                        <i class="fas fa-crosshairs"></i> Wycentruj mapę
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- New Race Modal -->
+    <div class="modal" id="new-race-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nowy wyścig</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="race-name">Nazwa wyścigu</label>
+                    <input type="text" id="race-name" class="form-input" placeholder="Wprowadź nazwę wyścigu">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancel-race-btn">Anuluj</button>
+                <button class="btn btn-primary" id="create-race-btn">Utwórz</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/tracking-communication.js"></script>
+    <script src="js/organizer-tracking.js"></script>
+    <script>
+        // DOM elements
+        const participantList = document.getElementById('participant-list');
+        const raceStatus = document.getElementById('race-status');
+        const raceTime = document.getElementById('race-time');
+        const raceParticipants = document.getElementById('race-participants');
+        const startRaceBtn = document.getElementById('start-race-btn');
+        const pauseRaceBtn = document.getElementById('pause-race-btn');
+        const endRaceBtn = document.getElementById('end-race-btn');
+        const newRaceBtn = document.getElementById('new-race-btn');
+        const newRaceModal = document.getElementById('new-race-modal');
+        const raceName = document.getElementById('race-name');
+        const cancelRaceBtn = document.getElementById('cancel-race-btn');
+        const createRaceBtn = document.getElementById('create-race-btn');
+        const notificationTitle = document.getElementById('notification-title');
+        const notificationMessage = document.getElementById('notification-message');
+        const notificationType = document.getElementById('notification-type');
+        const notificationRecipient = document.getElementById('notification-recipient');
+        const selectedParticipantGroup = document.getElementById('selected-participant-group');
+        const selectedParticipant = document.getElementById('selected-participant');
+        const sendNotificationBtn = document.getElementById('send-notification-btn');
+        const sosList = document.getElementById('sos-list');
+        const logoutBtn = document.getElementById('logout-btn');
+        const map = document.getElementById('map');
+        const participantDetails = document.getElementById('participant-details');
+        const participantColor = document.getElementById('participant-color');
+        const participantName = document.getElementById('participant-name');
+        const participantSail = document.getElementById('participant-sail');
+        const participantStatus = document.getElementById('participant-status');
+        const participantSpeed = document.getElementById('participant-speed');
+        const participantDistance = document.getElementById('participant-distance');
+        const participantLastUpdate = document.getElementById('participant-last-update');
+        const sendDirectNotificationBtn = document.getElementById('send-direct-notification-btn');
+        const centerMapBtn = document.getElementById('center-map-btn');
+        const connectionStatus = document.getElementById('connection-status');
+        const modalClose = document.querySelector('.modal-close');
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if user is logged in
+            const token = localStorage.getItem('authToken');
+            const role = localStorage.getItem('userRole');
+            
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Check if user is organizer
+            if (role !== 'organizer') {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // Connect to tracking server
+            window.trackingCommunication.connect();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Set up tracking communication callbacks
+            setupTrackingCommunication();
+            
+            // Initialize organizer tracking
+            window.organizerTracking.initialize();
+            
+            // Initialize map
+            window.organizerTracking.initializeMap(map);
+            
+            // Set up organizer tracking callbacks
+            setupOrganizerTracking();
+        });
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // New race button
+            newRaceBtn.addEventListener('click', () => {
+                newRaceModal.style.display = 'flex';
+                raceName.value = '';
+            });
+            
+            // Cancel race button
+            cancelRaceBtn.addEventListener('click', () => {
+                newRaceModal.style.display = 'none';
+            });
+            
+            // Create race button
+            createRaceBtn.addEventListener('click', async () => {
+                const name = raceName.value.trim();
+                
+                if (!name) {
+                    alert('Wprowadź nazwę wyścigu');
+                    return;
+                }
+                
+                const success = await window.organizerTracking.createRace(name);
+                
+                if (success) {
+                    newRaceModal.style.display = 'none';
+                }
+            });
+            
+            // Start race button
+            startRaceBtn.addEventListener('click', async () => {
+                await window.organizerTracking.startRace();
+            });
+            
+            // Pause race button
+            pauseRaceBtn.addEventListener('click', async () => {
+                await window.organizerTracking.pauseRace();
+            });
+            
+            // End race button
+            endRaceBtn.addEventListener('click', async () => {
+                if (confirm('Czy na pewno chcesz zakończyć wyścig?')) {
+                    await window.organizerTracking.endRace();
+                }
+            });
+            
+            // Notification recipient change
+            notificationRecipient.addEventListener('change', () => {
+                if (notificationRecipient.value === 'selected') {
+                    selectedParticipantGroup.style.display = 'block';
+                } else {
+                    selectedParticipantGroup.style.display = 'none';
+                }
+            });
+            
+            // Send notification button
+            sendNotificationBtn.addEventListener('click', async () => {
+                const title = notificationTitle.value.trim();
+                const message = notificationMessage.value.trim();
+                const type = notificationType.value;
+                const recipient = notificationRecipient.value;
+                
+                if (!title || !message) {
+                    alert('Wprowadź tytuł i treść komunikatu');
+                    return;
+                }
+                
+                let recipientId = 'all';
+                
+                if (recipient === 'selected') {
+                    recipientId = selectedParticipant.value;
+                    
+                    if (!recipientId) {
+                        alert('Wybierz uczestnika');
+                        return;
+                    }
+                } else {
+                    recipientId = recipient;
+                }
+                
+                const success = await window.organizerTracking.sendNotification(title, message, type, recipientId);
+                
+                if (success) {
+                    notificationTitle.value = '';
+                    notificationMessage.value = '';
+                    alert('Komunikat wysłany');
+                }
+            });
+            
+            // Send direct notification button
+            sendDirectNotificationBtn.addEventListener('click', () => {
+                // Set form values
+                notificationRecipient.value = 'selected';
+                selectedParticipantGroup.style.display = 'block';
+                
+                // Select participant
+                const participantId = window.organizerTracking.selectedParticipant;
+                if (participantId) {
+                    selectedParticipant.value = participantId;
+                }
+                
+                // Focus on title
+                notificationTitle.focus();
+                
+                // Scroll to notification form
+                document.querySelector('.notification-form').scrollIntoView({ behavior: 'smooth' });
+            });
+            
+            // Center map button
+            centerMapBtn.addEventListener('click', () => {
+                const participantId = window.organizerTracking.selectedParticipant;
+                if (participantId) {
+                    const participant = window.organizerTracking.participants.find(p => p.id === participantId);
+                    if (participant && participant.position) {
+                        window.organizerTracking.centerMapOnPosition(participant.position);
+                    }
+                }
+            });
+            
+            // Logout button
+            logoutBtn.addEventListener('click', () => {
+                logout();
+            });
+            
+            // Modal close button
+            modalClose.addEventListener('click', () => {
+                newRaceModal.style.display = 'none';
+            });
+            
+            // Click outside modal to close
+            window.addEventListener('click', (e) => {
+                if (e.target === newRaceModal) {
+                    newRaceModal.style.display = 'none';
+                }
+            });
+        }
+        
+        // Set up tracking communication callbacks
+        function setupTrackingCommunication() {
+            // Connection state changed
+            window.trackingCommunication.onConnectionStateChanged((connected) => {
+                updateConnectionStatus(connected);
+                
+                if (connected) {
+                    // Authenticate
+                    const token = localStorage.getItem('authToken');
+                    if (token) {
+                        window.trackingCommunication.authenticate(token);
+                    }
+                }
+            });
+            
+            // Authentication success
+            window.trackingCommunication.onAuthSuccess((data) => {
+                console.log('Authentication successful:', data);
+                
+                // Check if user is organizer
+                if (data.role !== 'organizer') {
+                    // Redirect to participant view
+                    window.location.href = 'index.html';
+                }
+            });
+            
+            // Authentication failure
+            window.trackingCommunication.onAuthFailure((message) => {
+                console.error('Authentication failed:', message);
+                
+                // Show error notification
+                alert('Błąd uwierzytelniania: ' + message);
+                
+                // Redirect to login page after delay
+                setTimeout(() => {
+                    logout();
+                }, 3000);
+            });
+            
+            // Error
+            window.trackingCommunication.onError((message) => {
+                console.error('Error:', message);
+                alert('Błąd: ' + message);
+            });
+        }
+        
+        // Set up organizer tracking callbacks
+        function setupOrganizerTracking() {
+            // Participants updated
+            window.organizerTracking.onParticipantsUpdated((participants) => {
+                updateParticipantList(participants);
+            });
+            
+            // Race updated
+            window.organizerTracking.onRaceUpdated((race) => {
+                updateRaceInfo(race);
+            });
+            
+            // SOS alert
+            window.organizerTracking.onSOSAlert((alerts) => {
+                updateSOSList(alerts);
+            });
+            
+            // Participant selected
+            window.organizerTracking.onParticipantSelected((participant) => {
+                updateParticipantDetails(participant);
+            });
+        }
+        
+        // Update participant list
+        function updateParticipantList(participants) {
+            // Clear participant list
+            participantList.innerHTML = '';
+            
+            // Check if empty
+            if (!participants || participants.length === 0) {
+                participantList.innerHTML = `
+                    <div style="text-align: center; color: #5f6368; margin-top: 30px;">
+                        <i class="fas fa-users" style="font-size: 32px; margin-bottom: 10px; opacity: 0.5;"></i>
+                        <p>Brak uczestników</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Update selected participant dropdown
+            selectedParticipant.innerHTML = '<option value="">Wybierz uczestnika</option>';
+            
+            // Add participants
+            participants.forEach(participant => {
+                // Create participant item
+                const item = document.createElement('div');
+                item.className = 'participant-item';
+                item.dataset.participantId = participant.id;
+                
+                // Set selected class if selected
+                if (window.organizerTracking.selectedParticipant === participant.id) {
+                    item.classList.add('active');
+                }
+                
+                // Set item content
+                item.innerHTML = `
+                    <div class="participant-color" style="background-color: ${participant.trackingColor || '#1a73e8'};"></div>
+                    <div class="participant-info">
+                        <div class="participant-name">${participant.name}</div>
+                        <div class="participant-sail">${participant.sailNumber}</div>
+                    </div>
+                    <div class="participant-status ${participant.isActive ? 'active' : ''}"></div>
+                `;
+                
+                // Add click event
+                item.addEventListener('click', () => {
+                    window.organizerTracking.selectParticipant(participant.id);
+                });
+                
+                // Add to list
+                participantList.appendChild(item);
+                
+                // Add to selected participant dropdown
+                const option = document.createElement('option');
+                option.value = participant.id;
+                option.textContent = `${participant.name} (${participant.sailNumber})`;
+                selectedParticipant.appendChild(option);
+            });
+            
+            // Update race participants count
+            if (window.organizerTracking.activeRace) {
+                raceParticipants.textContent = participants.filter(p => p.isActive).length;
+            }
+        }
+        
+        // Update race info
+        function updateRaceInfo(race) {
+            if (!race) {
+                // No active race
+                raceStatus.innerHTML = 'Brak aktywnego wyścigu';
+                raceTime.textContent = '00:00';
+                raceParticipants.textContent = '0';
+                
+                // Disable race control buttons
+                startRaceBtn.disabled = true;
+                pauseRaceBtn.disabled = true;
+                endRaceBtn.disabled = true;
+                
+                return;
+            }
+            
+            // Update race status
+            let statusText = '';
+            let statusClass = '';
+            
+            switch (race.status) {
+                case 'pending':
+                    statusText = 'Oczekuje';
+                    statusClass = 'status-pending';
+                    
+                    // Enable start button, disable others
+                    startRaceBtn.disabled = false;
+                    pauseRaceBtn.disabled = true;
+                    endRaceBtn.disabled = false;
+                    break;
+                case 'active':
+                    statusText = 'Aktywny';
+                    statusClass = 'status-active';
+                    
+                    // Enable pause and end buttons, disable start
+                    startRaceBtn.disabled = true;
+                    pauseRaceBtn.disabled = false;
+                    endRaceBtn.disabled = false;
+                    break;
+                case 'paused':
+                    statusText = 'Wstrzymany';
+                    statusClass = 'status-paused';
+                    
+                    // Enable start and end buttons, disable pause
+                    startRaceBtn.disabled = false;
+                    pauseRaceBtn.disabled = true;
+                    endRaceBtn.disabled = false;
+                    break;
+                case 'finished':
+                    statusText = 'Zakończony';
+                    statusClass = 'status-finished';
+                    
+                    // Disable all buttons
+                    startRaceBtn.disabled = true;
+                    pauseRaceBtn.disabled = true;
+                    endRaceBtn.disabled = true;
+                    break;
+            }
+            
+            raceStatus.innerHTML = `
+                <span class="${statusClass}"></span>
+                ${statusText}
+            `;
+            
+            // Update race time
+            if (race.status === 'active') {
+                startRaceTimer(race.startTime);
+            } else if (race.status === 'paused' || race.status === 'finished') {
+                stopRaceTimer();
+                
+                // Calculate race time
+                const startTime = new Date(race.startTime);
+                const endTime = race.endTime ? new Date(race.endTime) : new Date();
+                const raceTimeMs = endTime - startTime;
+                
+                // Format as mm:ss
+                const minutes = Math.floor(raceTimeMs / 60000);
+                const seconds = Math.floor((raceTimeMs % 60000) / 1000);
+                raceTime.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            // Update participants count
+            const activeParticipants = window.organizerTracking.participants.filter(p => p.isActive).length;
+            raceParticipants.textContent = activeParticipants;
+        }
+        
+        // Start race timer
+        function startRaceTimer(startTime) {
+            // Clear any existing timer
+            if (window.raceTimer) {
+                clearInterval(window.raceTimer);
+            }
+            
+            // Start time
+            const start = new Date(startTime);
+            
+            // Update timer every second
+            window.raceTimer = setInterval(() => {
+                const now = new Date();
+                const elapsed = now - start;
+                
+                // Format as mm:ss
+                const minutes = Math.floor(elapsed / 60000);
+                const seconds = Math.floor((elapsed % 60000) / 1000);
+                raceTime.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+        
+        // Stop race timer
+        function stopRaceTimer() {
+            if (window.raceTimer) {
+                clearInterval(window.raceTimer);
+                window.raceTimer = null;
+            }
+        }
+        
+        // Update SOS list
+        function updateSOSList(alerts) {
+            // Clear SOS list
+            sosList.innerHTML = '';
+            
+            // Check if empty
+            if (!alerts || alerts.length === 0) {
+                sosList.innerHTML = `
+                    <div style="text-align: center; color: #5f6368; margin-top: 30px;">
+                        <i class="fas fa-life-ring" style="font-size: 32px; margin-bottom: 10px; opacity: 0.5;"></i>
+                        <p>Brak alertów SOS</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Add alerts
+            alerts.forEach(alert => {
+                // Find participant
+                const participant = window.organizerTracking.participants.find(p => p.id === alert.participantId);
+                
+                if (!participant) {
+                    return;
+                }
+                
+                // Create alert item
+                const item = document.createElement('div');
+                item.className = `sos-item ${alert.resolved ? 'resolved' : ''}`;
+                
+                // Format time
+                const time = new Date(alert.time);
+                const timeString = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
+                
+                // Set item content
+                item.innerHTML = `
+                    <div class="sos-header">
+                        <div class="sos-title">${alert.resolved ? 'Rozwiązany' : 'SOS ALERT'}</div>
+                        <div class="sos-time">${timeString}</div>
+                    </div>
+                    <div class="sos-participant">${participant.name} (${participant.sailNumber})</div>
+                    <div class="sos-actions">
+                        <button class="btn btn-primary sos-locate-btn" data-participant-id="${participant.id}" data-lat="${alert.position.latitude}" data-lng="${alert.position.longitude}">
+                            <i class="fas fa-map-marker-alt"></i> Zlokalizuj
+                        </button>
+                        ${!alert.resolved ? `
+                            <button class="btn btn-success sos-resolve-btn" data-alert-id="${alert.id}">
+                                <i class="fas fa-check"></i> Rozwiąż
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+                
+                // Add event listeners
+                const locateBtn = item.querySelector('.sos-locate-btn');
+                locateBtn.addEventListener('click', () => {
+                    // Center map on position
+                    const lat = parseFloat(locateBtn.dataset.lat);
+                    const lng = parseFloat(locateBtn.dataset.lng);
+                    
+                    window.organizerTracking.centerMapOnPosition({
+                        latitude: lat,
+                        longitude: lng
+                    });
+                    
+                    // Select participant
+                    window.organizerTracking.selectParticipant(participant.id);
+                });
+                
+                const resolveBtn = item.querySelector('.sos-resolve-btn');
+                if (resolveBtn) {
+                    resolveBtn.addEventListener('click', async () => {
+                        const alertId = resolveBtn.dataset.alertId;
+                        await window.organizerTracking.resolveSOSAlert(alertId);
+                    });
+                }
+                
+                // Add to list
+                sosList.appendChild(item);
+            });
+        }
+        
+        // Update participant details
+        function updateParticipantDetails(participant) {
+            if (!participant) {
+                participantDetails.style.display = 'none';
+                return;
+            }
+            
+            // Show details
+            participantDetails.style.display = 'block';
+            
+            // Update participant info
+            participantColor.style.backgroundColor = participant.trackingColor || '#1a73e8';
+            participantName.textContent = participant.name;
+            participantSail.textContent = participant.sailNumber;
+            
+            // Update status
+            participantStatus.textContent = participant.isActive ? 'Aktywny' : 'Nieaktywny';
+            participantStatus.className = participant.isActive ? 'status-active' : '';
+            
+            // Update speed
+            participantSpeed.textContent = participant.speed ? `${participant.speed.toFixed(1)} km/h` : '0.0 km/h';
+            
+            // Update distance
+            participantDistance.textContent = participant.distance ? `${participant.distance.toFixed(1)} km` : '0.0 km';
+            
+            // Update last update time
+            if (participant.lastUpdate) {
+                const time = new Date(participant.lastUpdate);
+                participantLastUpdate.textContent = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}:${time.getSeconds().toString().padStart(2, '0')}`;
+            } else {
+                participantLastUpdate.textContent = '-';
+            }
+        }
+        
+        // Update connection status
+        function updateConnectionStatus(connected) {
+            const icon = connectionStatus.querySelector('i');
+            const text = connectionStatus.querySelector('span');
+            
+            if (connected) {
+                icon.className = 'fas fa-wifi status-good';
+                text.textContent = 'Połączony';
+            } else {
+                icon.className = 'fas fa-wifi status-bad';
+                text.textContent = 'Rozłączony';
+            }
+        }
+        
+        // Logout
+        function logout() {
+            // Clear auth data
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userRole');
+            
+            // Disconnect from tracking server
+            window.trackingCommunication.disconnect();
+            
+            // Redirect to login page
+            window.location.href = 'login.html';
+        }

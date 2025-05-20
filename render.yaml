@@ -1,0 +1,14 @@
+# Render.yaml configuration file
+services:
+  # Web service for the frontend and WebSocket server
+  - type: web
+    name: king-of-the-bay
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python wsgi_render.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+    healthCheckPath: /
+    # Ensure WebSockets are enabled
+    websocket: true

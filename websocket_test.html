@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test WebSocket - King Of theBay</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        #status {
+            font-weight: bold;
+        }
+        .connected {
+            color: green;
+        }
+        .disconnected {
+            color: red;
+        }
+        #log {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #f9f9f9;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .sent {
+            color: blue;
+        }
+        .received {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        .info {
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test WebSocket - King Of theBay</h1>
+    
+    <div class="card">
+        <h2>Status połączenia</h2>
+        <p>Status: <span id="status" class="disconnected">Rozłączony</span></p>
+        <div class="controls">
+            <button id="connectBtn">Połącz</button>
+            <button id="disconnectBtn" disabled>Rozłącz</button>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>Akcje</h2>
+        <div class="controls">
+            <button id="authBtn" disabled>Uwierzytelnij</button>
+            <button id="positionBtn" disabled>Wyślij pozycję</button>
+            <button id="sosBtn" disabled>Wyślij SOS</button>
+            <button id="pingBtn" disabled>Wyślij Ping</button>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>Logi</h2>
+        <div id="log"></div>
+    </div>
+    
+    <script>
+        // DOM elements
+        const statusEl = document.getElementById('status');
+        const logEl = document.getElementById('log');
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const authBtn = document.getElementById('authBtn');
+        const positionBtn = document.getElementById('positionBtn');
+        const sosBtn = document.getElementById('sosBtn');
+        const pingBtn = document.getElementById('pingBtn');
+        
+        // WebSocket connection
+        let socket = null;
+        let isConnected = false;
+        let isAuthenticated = false;
+        
+        // Log message
+        function log(message, type = 'info') {
+            const now = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = type;
+            entry.textContent = `[${now}] ${message}`;
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        // Update connection status
+        function updateStatus(connected) {
+            isConnected = connected;
+            statusEl.textContent = connected ? 'Połączony' : 'Rozłączony';
+            statusEl.className = connected ? 'connected' : 'disconnected';
+            
+            connectBtn.disabled = connected;
+            disconnectBtn.disabled = !connected;
+            authBtn.disabled = !connected || isAuthenticated;
+            positionBtn.disabled = !connected || !isAuthenticated;
+            sosBtn.disabled = !connected || !isAuthenticated;
+            pingBtn.disabled = !connected;
+        }
+        
+        // Connect to server
+        function connect() {
+            try {
+                // Get server URL
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const host = 'localhost:8765';
+                const url = `${protocol}//${host}`;
+                
+                log(`Łączenie z serwerem: ${url}`);
+                
+                // Create WebSocket connection
+                socket = new WebSocket(url);
+                
+                // Set up event handlers
+                socket.onopen = handleOpen;
+                socket.onmessage = handleMessage;
+                socket.onclose = handleClose;
+                socket.onerror = handleError;
+            } catch (error) {
+                log(`Błąd połączenia: ${error.message}`, 'error');
+            }
+        }
+        
+        // Disconnect from server
+        function disconnect() {
+            if (!isConnected) return;
+            
+            log('Rozłączanie...');
+            
+            if (socket) {
+                socket.close();
+                socket = null;
+            }
+        }
+        
+        // Handle connection open
+        function handleOpen() {
+            log('Połączono z serwerem');
+            updateStatus(true);
+        }
+        
+        // Handle connection close
+        function handleClose(event) {
+            log(`Rozłączono: kod=${event.code}, powód=${event.reason || 'brak'}`);
+            updateStatus(false);
+            isAuthenticated = false;
+        }
+        
+        // Handle connection error
+        function handleError(error) {
+            log(`Błąd WebSocket: ${error}`, 'error');
+        }
+        
+        // Handle message
+        function handleMessage(event) {
+            try {
+                const message = JSON.parse(event.data);
+                log(`Otrzymano: ${JSON.stringify(message, null, 2)}`, 'received');
+                
+                // Handle auth success
+                if (message.type === 'auth_success') {
+                    isAuthenticated = true;
+                    updateStatus(true);
+                }
+            } catch (error) {
+                log(`Błąd przetwarzania wiadomości: ${error.message}`, 'error');
+            }
+        }
+        
+        // Send message
+        function sendMessage(type, data = {}) {
+            if (!isConnected) {
+                log('Nie połączono z serwerem', 'error');
+                return;
+            }
+            
+            try {
+                const message = {
+                    type,
+                    ...data
+                };
+                
+                socket.send(JSON.stringify(message));
+                log(`Wysłano: ${JSON.stringify(message, null, 2)}`, 'sent');
+                
+                return true;
+            } catch (error) {
+                log(`Błąd wysyłania wiadomości: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        // Send auth message
+        function sendAuth() {
+            return sendMessage('auth', { token: 'test_token' });
+        }
+        
+        // Send position update
+        function sendPosition() {
+            // Generate random position
+            const lat = 54.0 + Math.random() * 0.1;
+            const lng = 18.5 + Math.random() * 0.1;
+            
+            return sendMessage('position_update', {
+                position: { lat, lng },
+                speed: Math.random() * 10,
+                distance: Math.random() * 1000
+            });
+        }
+        
+        // Send SOS alert
+        function sendSOS() {
+            // Generate random position
+            const lat = 54.0 + Math.random() * 0.1;
+            const lng = 18.5 + Math.random() * 0.1;
+            
+            return sendMessage('sos', {
+                position: { lat, lng }
+            });
+        }
+        
+        // Send ping
+        function sendPing() {
+            return sendMessage('ping', { timestamp: Date.now() });
+        }
+        
+        // Event listeners
+        connectBtn.addEventListener('click', connect);
+        disconnectBtn.addEventListener('click', disconnect);
+        authBtn.addEventListener('click', sendAuth);
+        positionBtn.addEventListener('click', sendPosition);
+        sosBtn.addEventListener('click', sendSOS);
+        pingBtn.addEventListener('click', sendPing);
+        
+        // Initial log
+        log('Strona testowa WebSocket załadowana');
+    </script>
+</body>
+</html>

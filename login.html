@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>King Of theBay - Logowanie</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        body {
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .login-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            padding: 30px;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .app-logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+        }
+        
+        h1 {
+            font-size: 24px;
+            color: #202124;
+            margin: 0;
+        }
+        
+        .login-form {
+            margin-top: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #5f6368;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #1a73e8;
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            background-color: #1765cc;
+        }
+        
+        .btn:disabled {
+            background-color: #dadce0;
+            cursor: not-allowed;
+        }
+        
+        .error-message {
+            color: #d93025;
+            font-size: 14px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        .role-selector {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .role-option {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .role-option:first-child {
+            margin-right: 10px;
+        }
+        
+        .role-option.selected {
+            border-color: #1a73e8;
+            background-color: #e8f0fe;
+        }
+        
+        .role-option i {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #5f6368;
+        }
+        
+        .role-option.selected i {
+            color: #1a73e8;
+        }
+        
+        .role-option h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #202124;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <img src="img/logo.png" alt="Logo" class="app-logo">
+            <h1>King Of theBay</h1>
+        </div>
+        
+        <div class="login-form">
+            <div class="form-group">
+                <label class="form-label" for="username">Nazwa użytkownika</label>
+                <input type="text" id="username" class="form-input" placeholder="Wprowadź nazwę użytkownika">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="password">Hasło</label>
+                <input type="password" id="password" class="form-input" placeholder="Wprowadź hasło">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Rola</label>
+                <div class="role-selector">
+                    <div class="role-option" data-role="participant">
+                        <i class="fas fa-user"></i>
+                        <h3>Uczestnik</h3>
+                    </div>
+                    <div class="role-option" data-role="organizer">
+                        <i class="fas fa-users-cog"></i>
+                        <h3>Organizator</h3>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn" id="login-btn">Zaloguj się</button>
+            
+            <div class="error-message" id="error-message">
+                Nieprawidłowa nazwa użytkownika lub hasło
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // DOM elements
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const roleOptions = document.querySelectorAll('.role-option');
+        const loginBtn = document.getElementById('login-btn');
+        const errorMessage = document.getElementById('error-message');
+        
+        // Selected role
+        let selectedRole = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if user is already logged in
+            const token = localStorage.getItem('authToken');
+            const role = localStorage.getItem('userRole');
+            
+            if (token && role) {
+                // Redirect to appropriate page
+                redirectToApp(role);
+            }
+            
+            // Set up event listeners
+            setupEventListeners();
+        });
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Role options
+            roleOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    // Remove selected class from all options
+                    roleOptions.forEach(opt => opt.classList.remove('selected'));
+                    
+                    // Add selected class to clicked option
+                    option.classList.add('selected');
+                    
+                    // Update selected role
+                    selectedRole = option.dataset.role;
+                });
+            });
+            
+            // Login button
+            loginBtn.addEventListener('click', () => {
+                login();
+            });
+            
+            // Enter key in password field
+            passwordInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    login();
+                }
+            });
+        }
+        
+        // Login
+        function login() {
+            // Get values
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            // Validate
+            if (!username || !password || !selectedRole) {
+                showError('Wprowadź nazwę użytkownika, hasło i wybierz rolę');
+                return;
+            }
+            
+            // In a real implementation, this would send a request to the server
+            // For this demo, we'll simulate it
+            
+            // Simulate successful login
+            // In a real implementation, the server would return a JWT token
+            const token = 'demo-token-' + Date.now();
+            
+            // Store token and role in localStorage
+            localStorage.setItem('authToken', token);
+            localStorage.setItem('userRole', selectedRole);
+            
+            // Redirect to appropriate page
+            redirectToApp(selectedRole);
+        }
+        
+        // Show error message
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+        
+        // Redirect to app
+        function redirectToApp(role) {
+            if (role === 'organizer') {
+                window.location.href = 'organizer-view.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>

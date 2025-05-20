@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>King Of theBay - Śledzenie GPS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="mobile-container">
+            <!-- Home Screen -->
+            <div class="screen active" id="home-screen">
+                <div class="app-header">
+                    <div style="display: flex; align-items: center;">
+                        <img src="img/logo.png" alt="Logo" class="app-logo">
+                        <h1 class="app-title">King Of theBay</h1>
+                    </div>
+                    <div id="connection-status">
+                        <i class="fas fa-wifi status-bad"></i>
+                        <span>Rozłączony</span>
+                    </div>
+                </div>
+                
+                <div class="content">
+                    <div class="status-indicator" id="gps-status">
+                        <i class="fas fa-satellite-dish status-icon status-bad"></i>
+                        <div class="status-text">
+                            <div>GPS nieaktywny</div>
+                            <div style="font-size: 12px; color: #5f6368;">Włącz śledzenie, aby rozpocząć</div>
+                        </div>
+                    </div>
+                    
+                    <div class="map-container">
+                        <div class="map-grid"></div>
+                        <div id="map-placeholder">
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #5f6368;">
+                                <i class="fas fa-map-marker-alt" style="font-size: 32px; margin-bottom: 10px;"></i>
+                                <div>Mapa zostanie wyświetlona po włączeniu śledzenia</div>
+                            </div>
+                        </div>
+                        <div class="compass">N</div>
+                        <div class="map-label" id="map-coordinates">0.000000, 0.000000</div>
+                    </div>
+                    
+                    <div class="stats-container">
+                        <div class="stat-card">
+                            <div class="stat-value" id="speed-value">0.0</div>
+                            <div class="stat-label">km/h</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="distance-value">0.0</div>
+                            <div class="stat-label">km</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="accuracy-value">0</div>
+                            <div class="stat-label">m (dokładność)</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="max-speed-value">0.0</div>
+                            <div class="stat-label">km/h (max)</div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" id="tracking-toggle-btn">
+                        <i class="fas fa-play"></i> Włącz śledzenie
+                    </button>
+                    
+                    <div id="race-info" style="margin-top: 20px; display: none;">
+                        <h3 style="margin-top: 0;">Informacje o wyścigu</h3>
+                        <div style="background-color: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <div style="font-weight: 500;">Status:</div>
+                                <div id="race-status">Brak aktywnego wyścigu</div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <div style="font-weight: 500;">Czas:</div>
+                                <div id="race-time">00:00</div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <div style="font-weight: 500;">Uczestnicy:</div>
+                                <div id="race-participants">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="sos-button" id="sos-btn">SOS</button>
+                
+                <div class="nav-bar">
+                    <a href="#" class="nav-item active" data-screen="home-screen">
+                        <i class="fas fa-home nav-icon"></i>
+                        <span>Start</span>
+                    </a>
+                    <a href="#" class="nav-item" data-screen="notifications-screen">
+                        <i class="fas fa-bell nav-icon"></i>
+                        <span>Komunikaty</span>
+                    </a>
+                    <a href="#" class="nav-item" data-screen="results-screen">
+                        <i class="fas fa-trophy nav-icon"></i>
+                        <span>Wyniki</span>
+                    </a>
+                    <a href="#" class="nav-item" data-screen="settings-screen">
+                        <i class="fas fa-cog nav-icon"></i>
+                        <span>Ustawienia</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Notifications Screen -->
+            <div class="screen" id="notifications-screen">
+                <div class="app-header">
+                    <h1 class="app-title">Komunikaty</h1>
+                </div>
+                
+                <div class="content" id="notifications-container">
+                    <div style="text-align: center; color: #5f6368; margin-top: 30px;">
+                        <i class="fas fa-bell" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+                        <p>Brak komunikatów</p>
+                    </div>
+                </div>
+                
+                <div class="nav-bar">
+                    <a href="#" class="nav-item" data-screen="home-screen">
+                        <i class="fas fa-home nav-icon"></i>
+                        <span>Start</span>
+                    </a>
+                    <a href="#" class="nav-item active" data-screen="notifications-screen">
+                        <i class="fas fa-bell nav-icon"></i>
+                        <span>Komunikaty</span>
+                    </a>
+                    <a href="#" class="nav-item" data-screen="results-screen">
+                        <i class="fas fa-trophy nav-icon"></i>
+                        <span>Wyniki</span>
+                    </a>
+                    <a href="#" class="nav-item" data-screen="settings-screen">
+                        <i class="fas fa-cog nav-icon"></i>
+                        <span>Ustawienia</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Results Screen -->
+            <div class="screen" id="results-screen">
+                <div class="app-header">
+                    <h1 class="app-title">Wyniki</h1>
+                </div>
+                
+                <div class="content">
+                    <div id="results-container">
+                        <div style="text-align: center; color: #5f6368; margin-top: 30px;">
+                            <i class="fas fa-trophy" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+                            <p>Brak wyników</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="nav-bar">
+                    <a href="#" class="nav-item" data-screen="home-screen">
+                        <i class="fas fa-home nav-icon"></i>
+                        <span>Start</span>
+                    </a>
+                    <a href="#" class="nav-item" data-screen="notifications-screen">
+                        <i class="fas fa-bell nav-icon"></i>
+                        <span>Komunikaty</span>
+                    </a>
+                    <a href="#" class="nav-item active" data-screen="results-screen">
+                        <i class="fas fa-trophy nav-icon"></i>
+                        <span>Wyniki</span>
+                    </a>
+                    <a href="#" class="nav-item" data-screen="settings-screen">
+                        <i class="fas fa-cog nav-icon"></i>
+                        <span>Ustawienia</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Settings Screen -->
+            <div class="screen" id="settings-screen">
+                <div class="app-header">
+                    <h1 class="app-title">Ustawienia</h1>
+                </div>
+                
+                <div class="content">
+                    <div style="background-color: white; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div id="user-name" style="font-weight: 500; font-size: 18px;">Użytkownik</div>
+                                <div id="user-sail" style="color: #5f6368; font-size: 14px;">POL-000</div>
+                            </div>
+                            <div style="background-color: #1a73e8; color: white; padding: 5px 10px; border-radius: 20px; font-size: 12px;">
+                                Uczestnik
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3>Ustawienia śledzenia</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Kolor śledzenia</label>
+                        <div class="color-options">
+                            <div class="color-option selected" style="background-color: #1a73e8;" data-color="#1a73e8"></div>
+                            <div class="color-option" style="background-color: #4caf50;" data-color="#4caf50"></div>
+                            <div class="color-option" style="background-color: #f44336;" data-color="#f44336"></div>
+                            <div class="color-option" style="background-color: #ff9800;" data-color="#ff9800"></div>
+                            <div class="color-option" style="background-color: #9c27b0;" data-color="#9c27b0"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="update-interval">Częstotliwość aktualizacji</label>
+                        <select id="update-interval" class="form-input">
+                            <option value="5">Co 5 sekund</option>
+                            <option value="10" selected>Co 10 sekund</option>
+                            <option value="30">Co 30 sekund</option>
+                            <option value="60">Co 1 minutę</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="accuracy-threshold">Próg dokładności GPS</label>
+                        <select id="accuracy-threshold" class="form-input">
+                            <option value="5">5 metrów</option>
+                            <option value="10" selected>10 metrów</option>
+                            <option value="20">20 metrów</option>
+                            <option value="50">50 metrów</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn" id="save-settings-btn">
+                        <i class="fas fa-save"></i> Zapisz ustawienia
+                    </button>
+                    
+                    <button class="btn btn-danger" id="logout-btn" style="margin-top: 30px;">
+                        <i class="fas fa-sign-out-alt"></i> Wyloguj się
+                    </button>
+                </div>
+                
+                <div class="nav-bar">
+                    <a href="#" class="nav-item" data-screen="home-screen">
+                        <i class="fas fa-home nav-icon"></i>
+                        <span>Start</span>
+                    </a>
+                    <a href="#" class="nav-item" data-screen="notifications-screen">
+                        <i class="fas fa-bell nav-icon"></i>
+                        <span>Komunikaty</span>
+                    </a>
+                    <a href="#" class="nav-item" data-screen="results-screen">
+                        <i class="fas fa-trophy nav-icon"></i>
+                        <span>Wyniki</span>
+                    </a>
+                    <a href="#" class="nav-item active" data-screen="settings-screen">
+                        <i class="fas fa-cog nav-icon"></i>
+                        <span>Ustawienia</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SOS Confirmation Modal -->
+    <div class="modal" id="sos-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Potwierdź wysłanie SOS</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Czy na pewno chcesz wysłać sygnał SOS? Użyj tej funkcji tylko w przypadku rzeczywistego zagrożenia.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancel-sos-btn">Anuluj</button>
+                <button class="btn btn-danger" id="confirm-sos-btn">Wyślij SOS</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/tracking-communication.js"></script>
+    <script src="js/gps-tracking.js"></script>
+    <script>
+        // DOM elements
+        const navItems = document.querySelectorAll('.nav-item');
+        const screens = document.querySelectorAll('.screen');
+        const trackingToggleBtn = document.getElementById('tracking-toggle-btn');
+        const sosBtn = document.getElementById('sos-btn');
+        const sosModal = document.getElementById('sos-modal');
+        const confirmSosBtn = document.getElementById('confirm-sos-btn');
+        const cancelSosBtn = document.getElementById('cancel-sos-btn');
+        const sosModalClose = document.querySelector('#sos-modal .modal-close');
+        const logoutBtn = document.getElementById('logout-btn');
+        const saveSettingsBtn = document.getElementById('save-settings-btn');
+        const colorOptions = document.querySelectorAll('.color-option');
+        const connectionStatus = document.getElementById('connection-status');
+        const gpsStatus = document.getElementById('gps-status');
+        const speedValue = document.getElementById('speed-value');
+        const distanceValue = document.getElementById('distance-value');
+        const accuracyValue = document.getElementById('accuracy-value');
+        const maxSpeedValue = document.getElementById('max-speed-value');
+        const mapCoordinates = document.getElementById('map-coordinates');
+        const notificationsContainer = document.getElementById('notifications-container');
+        const resultsContainer = document.getElementById('results-container');
+        const userName = document.getElementById('user-name');
+        const userSail = document.getElementById('user-sail');
+        const raceInfo = document.getElementById('race-info');
+        const raceStatus = document.getElementById('race-status');
+        const raceTime = document.getElementById('race-time');
+        const raceParticipants = document.getElementById('race-participants');
+        
+        // State
+        let isTracking = false;
+        let selectedColor = '#1a73e8';
+        let updateInterval = 10;
+        let accuracyThreshold = 10;
+        let activeRace = null;
+        let raceTimer = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if user is logged in
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Set user info
+            userName.textContent = localStorage.getItem('userName') || 'Użytkownik';
+            userSail.textContent = localStorage.getItem('userSailNumber') || 'POL-000';
+            
+            // Connect to tracking server
+            window.trackingCommunication.connect();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Set up tracking communication callbacks
+            setupTrackingCommunication();
+            
+            // Set up GPS tracking callbacks
+            setupGPSTracking();
+            
+            // Load settings
+            loadSettings();
+        });
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Navigation
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    // Get target screen
+                    const targetScreen = item.dataset.screen;
+                    
+                    // Update active nav item
+                    navItems.forEach(navItem => {
+                        navItem.classList.remove('active');
+                    });
+                    item.classList.add('active');
+                    
+                    // Show target screen
+                    screens.forEach(screen => {
+                        screen.classList.remove('active');
+                        if (screen.id === targetScreen) {
+                            screen.classList.add('active');
+                        }
+                    });
+                });
+            });
+            
+            // Tracking toggle
+            trackingToggleBtn.addEventListener('click', () => {
+                if (isTracking) {
+                    stopTracking();
+                } else {
+                    startTracking();
+                }
+            });
+            
+            // SOS button
+            sosBtn.addEventListener('click', () => {
+                sosModal.style.display = 'flex';
+            });
+            
+            // SOS modal close
+            sosModalClose.addEventListener('click', () => {
+                sosModal.style.display = 'none';
+            });
+            
+            // Cancel SOS
+            cancelSosBtn.addEventListener('click', () => {
+                sosModal.style.display = 'none';
+            });
+            
+            // Confirm SOS
+            confirmSosBtn.addEventListener('click', () => {
+                sendSOS();
+                sosModal.style.display = 'none';
+            });
+            
+            // Logout
+            logoutBtn.addEventListener('click', () => {
+                logout();
+            });
+            
+            // Save settings
+            saveSettingsBtn.addEventListener('click', () => {
+                saveSettings();
+            });
+            
+            // Color options
+            colorOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    // Remove selected class from all options
+                    colorOptions.forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    
+                    // Add selected class to clicked option
+                    option.classList.add('selected');
+                    
+                    // Update selected color
+                    selectedColor = option.dataset.color;
+                });
+            });
+            
+            // Click outside modal to close
+            window.addEventListener('click', (e) => {
+                if (e.target === sosModal) {
+                    sosModal.style.display = 'none';
+                }
+            });
+        }
+        
+        // Set up tracking communication callbacks
+        function setupTrackingCommunication() {
+            // Connection state changed
+            window.trackingCommunication.onConnectionStateChanged((connected) => {
+                updateConnectionStatus(connected);
+                
+                if (connected) {
+                    // Authenticate
+                    const token = localStorage.getItem('authToken');
+                    if (token) {
+                        window.trackingCommunication.authenticate(token);
+                    }
+                }
+            });
+            
+            // Authentication success
+            window.trackingCommunication.onAuthSuccess((data) => {
+                console.log('Authentication successful:', data);
+                
+                // Check if user is participant
+                if (data.role !== 'participant') {
+                    // Redirect to organizer view
+                    window.location.href = 'organizer-view.html';
+                }
+            });
+            
+            // Authentication failure
+            window.trackingCommunication.onAuthFailure((message) => {
+                console.error('Authentication failed:', message);
+                
+                // Show error notification
+                showNotification('Błąd uwierzytelniania', message, 'error');
+                
+                // Redirect to login page after delay
+                setTimeout(() => {
+                    logout();
+                }, 3000);
+            });
+            
+            // Race update
+            window.trackingCommunication.onRaceUpdateReceived((data) => {
+                updateRaceInfo(data);
+            });
+            
+            // Notification
+            window.trackingCommunication.onNotificationReceived((data) => {
+                showNotification(data.title, data.message, data.type);
+            });
+            
+            // Error
+            window.trackingCommunication.onError((message) => {
+                showNotification('Błąd', message, 'error');
+            });
+        }
+        
+        // Set up GPS tracking callbacks
+        function setupGPSTracking() {
+            // Position update
+            window.gpsTracking.onPositionUpdated((data) => {
+                // Update UI
+                updateTrackingUI(data);
+                
+                // Send position update to server
+                window.trackingCommunication.sendPositionUpdate(
+                    data.position,
+                    data.speed,
+                    data.distance
+                );
+            });
+            
+            // Tracking start
+            window.gpsTracking.onTrackingStarted(() => {
+                isTracking = true;
+                updateTrackingButtonUI();
+            });
+            
+            // Tracking stop
+            window.gpsTracking.onTrackingStopped(() => {
+                isTracking = false;
+                updateTrackingButtonUI();
+            });
+            
+            // Error
+            window.gpsTracking.onError((message) => {
+                showNotification('Błąd GPS', message, 'error');
+            });
+        }
+        
+        // Start tracking
+        function startTracking() {
+            window.gpsTracking.startTracking();
+        }
+        
+        // Stop tracking
+        function stopTracking() {
+            window.gpsTracking.stopTracking();
+        }
+        
+        // Send SOS
+        async function sendSOS() {
+            try {
+                // Send SOS
+                const success = await window.gpsTracking.sendSOS();
+                
+                if (success) {
+                    showNotification('SOS wysłany', 'Sygnał SOS został wysłany do organizatora', 'emergency');
+                } else {
+                    showNotification('Błąd', 'Nie udało się wysłać sygnału SOS', 'error');
+                }
+            } catch (error) {
+                console.error('Error sending SOS:', error);
+                showNotification('Błąd', 'Nie udało się wysłać sygnału SOS', 'error');
+            }
+        }
+        
+        // Update tracking button UI
+        function updateTrackingButtonUI() {
+            if (isTracking) {
+                trackingToggleBtn.innerHTML = '<i class="fas fa-stop"></i> Zatrzymaj śledzenie';
+                trackingToggleBtn.classList.remove('btn-primary');
+                trackingToggleBtn.classList.add('btn-danger');
+            } else {
+                trackingToggleBtn.innerHTML = '<i class="fas fa-play"></i> Włącz śledzenie';
+                trackingToggleBtn.classList.remove('btn-danger');
+                trackingToggleBtn.classList.add('btn-primary');
+            }
+        }
+        
+        // Update tracking UI
+        function updateTrackingUI(data) {
+            // Update GPS status
+            const gpsIcon = gpsStatus.querySelector('i');
+            const gpsText = gpsStatus.querySelector('.status-text div:first-child');
+            
+            gpsIcon.className = 'fas fa-satellite-dish status-icon status-good';
+            gpsText.textContent = 'GPS aktywny';
+            
+            // Update stats
+            speedValue.textContent = data.speed.toFixed(1);
+            distanceValue.textContent = data.distance.toFixed(1);
+            accuracyValue.textContent = data.accuracy.toFixed(0);
+            maxSpeedValue.textContent = Math.max(data.speed, parseFloat(maxSpeedValue.textContent) || 0).toFixed(1);
+            
+            // Update map coordinates
+            if (data.position) {
+                mapCoordinates.textContent = `${data.position.latitude.toFixed(6)}, ${data.position.longitude.toFixed(6)}`;
+            }
+        }
+        
+        // Update connection status
+        function updateConnectionStatus(connected) {
+            const icon = connectionStatus.querySelector('i');
+            const text = connectionStatus.querySelector('span');
+            
+            if (connected) {
+                icon.className = 'fas fa-wifi status-good';
+                text.textContent = 'Połączony';
+            } else {
+                icon.className = 'fas fa-wifi status-bad';
+                text.textContent = 'Rozłączony';
+            }
+        }
+        
+        // Update race info
+        function updateRaceInfo(data) {
+            // Store race data
+            activeRace = data;
+            
+            // Show race info
+            raceInfo.style.display = 'block';
+            
+            // Update race status
+            let statusText = '';
+            let statusClass = '';
+            
+            switch (data.status) {
+                case 'pending':
+                    statusText = 'Oczekuje';
+                    statusClass = 'status-pending';
+                    break;
+                case 'active':
+                    statusText = 'Aktywny';
+                    statusClass = 'status-active';
+                    break;
+                case 'paused':
+                    statusText = 'Wstrzymany';
+                    statusClass = 'status-paused';
+                    break;
+                case 'finished':
+                    statusText = 'Zakończony';
+                    statusClass = 'status-finished';
+                    break;
+            }
+            
+            raceStatus.innerHTML = `
+                <span class="status-indicator ${statusClass}"></span>
+                ${statusText}
+            `;
+            
+            // Update race time
+            if (data.status === 'active') {
+                startRaceTimer(data.startTime);
+            } else if (data.status === 'paused' || data.status === 'finished') {
+                stopRaceTimer();
+                
+                // Calculate race time
+                const startTime = new Date(data.startTime);
+                const endTime = data.endTime ? new Date(data.endTime) : new Date();
+                const raceTimeMs = endTime - startTime;
+                
+                // Format as mm:ss
+                const minutes = Math.floor(raceTimeMs / 60000);
+                const seconds = Math.floor((raceTimeMs % 60000) / 1000);
+                raceTime.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            // Update participants count
+            raceParticipants.textContent = data.participants || '0';
+            
+            // If race is finished and has results, update results screen
+            if (data.status === 'finished' && data.results && data.results.length > 0) {
+                updateResults(data.results);
+            }
+        }
+        
+        // Start race timer
+        function startRaceTimer(startTime) {
+            // Clear any existing timer
+            if (raceTimer) {
+                clearInterval(raceTimer);
+            }
+            
+            // Start time
+            const start = new Date(startTime);
+            
+            // Update timer every second
+            raceTimer = setInterval(() => {
+                const now = new Date();
+                const elapsed = now - start;
+                
+                // Format as mm:ss
+                const minutes = Math.floor(elapsed / 60000);
+                const seconds = Math.floor((elapsed % 60000) / 1000);
+                raceTime.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+        
+        // Stop race timer
+        function stopRaceTimer() {
+            if (raceTimer) {
+                clearInterval(raceTimer);
+                raceTimer = null;
+            }
+        }
+        
+        // Update results
+        function updateResults(results) {
+            // Clear results container
+            resultsContainer.innerHTML = '';
+            
+            // Create results table
+            const table = document.createElement('div');
+            table.className = 'results-table';
+            
+            // Create header
+            const header = document.createElement('div');
+            header.className = 'results-header';
+            header.innerHTML = `
+                <div class="results-cell" style="flex: 0 0 40px; text-align: center;">#</div>
+                <div class="results-cell">Zawodnik</div>
+                <div class="results-cell" style="flex: 0 0 80px; text-align: right;">Dystans</div>
+                <div class="results-cell" style="flex: 0 0 80px; text-align: right;">Czas</div>
+            `;
+            table.appendChild(header);
+            
+            // Add results
+            results.forEach((result, index) => {
+                const row = document.createElement('div');
+                row.className = 'results-row';
+                
+                // Format time as mm:ss
+                const minutes = Math.floor(result.time / 60);
+                const seconds = result.time % 60;
+                const timeFormatted = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Highlight current user
+                const isCurrentUser = result.userId === localStorage.getItem('userId');
+                
+                row.innerHTML = `
+                    <div class="results-cell" style="flex: 0 0 40px; text-align: center; ${isCurrentUser ? 'font-weight: 700; color: #1a73e8;' : ''}">${index + 1}</div>
+                    <div class="results-cell" style="${isCurrentUser ? 'font-weight: 700; color: #1a73e8;' : ''}">
+                        ${result.name} <span style="color: #5f6368; font-size: 12px;">${result.sailNumber}</span>
+                    </div>
+                    <div class="results-cell" style="flex: 0 0 80px; text-align: right; ${isCurrentUser ? 'font-weight: 700; color: #1a73e8;' : ''}">${result.distance.toFixed(1)} km</div>
+                    <div class="results-cell" style="flex: 0 0 80px; text-align: right; ${isCurrentUser ? 'font-weight: 700; color: #1a73e8;' : ''}">${timeFormatted}</div>
+                `;
+                table.appendChild(row);
+            });
+            
+            // Add table to results container
+            resultsContainer.appendChild(table);
+        }
+        
+        // Show notification
+        function showNotification(title, message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            
+            // Get current time
+            const now = new Date();
+            const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            
+            // Set notification content
+            notification.innerHTML = `
+                <div class="notification-header">
+                    <div class="notification-title">${title}</div>
+                    <div class="notification-time">${timeString}</div>
+                </div>
+                <div class="notification-message">${message}</div>
+            `;
+            
+            // Add notification to container
+            const emptyMessage = notificationsContainer.querySelector('div[style*="text-align: center"]');
+            if (emptyMessage) {
+                notificationsContainer.innerHTML = '';
+            }
+            
+            // Add to beginning of container
+            notificationsContainer.insertBefore(notification, notificationsContainer.firstChild);
+            
+            // Show notification badge
+            const notificationTab = document.querySelector('.nav-item[data-screen="notifications-screen"] .nav-icon');
+            notificationTab.classList.add('has-notification');
+        }
+        
+        // Load settings
+        function loadSettings() {
+            // Load color
+            const savedColor = localStorage.getItem('trackingColor');
+            if (savedColor) {
+                selectedColor = savedColor;
+                
+                // Update selected color option
+                colorOptions.forEach(option => {
+                    if (option.dataset.color === savedColor) {
+                        colorOptions.forEach(opt => opt.classList.remove('selected'));
+                        option.classList.add('selected');
+                    }
+                });
+            }
+            
+            // Load update interval
+            const savedInterval = localStorage.getItem('updateInterval');
+            if (savedInterval) {
+                updateInterval = parseInt(savedInterval);
+                document.getElementById('update-interval').value = savedInterval;
+            }
+            
+            // Load accuracy threshold
+            const savedThreshold = localStorage.getItem('accuracyThreshold');
+            if (savedThreshold) {
+                accuracyThreshold = parseInt(savedThreshold);
+                document.getElementById('accuracy-threshold').value = savedThreshold;
+            }
+            
+            // Apply settings to GPS tracking
+            if (window.gpsTracking) {
+                // Note: These methods don't exist in our implementation yet
+                // We would need to add them if we want to support these settings
+            }
+        }
+        
+        // Save settings
+        function saveSettings() {
+            // Get values
+            const updateInterval = document.getElementById('update-interval').value;
+            const accuracyThreshold = document.getElementById('accuracy-threshold').value;
+            
+            // Save to local storage
+            localStorage.setItem('trackingColor', selectedColor);
+            localStorage.setItem('updateInterval', updateInterval);
+            localStorage.setItem('accuracyThreshold', accuracyThreshold);
+            
+            // Apply settings to GPS tracking
+            if (window.gpsTracking) {
+                // Note: These methods don't exist in our implementation yet
+                // We would need to add them if we want to support these settings
+            }
+            
+            // Update participant settings on server
+            updateParticipantSettings();
+            
+            // Show notification
+            showNotification('Ustawienia zapisane', 'Twoje ustawienia zostały zapisane', 'success');
+        }
+        
+        // Update participant settings on server
+        async function updateParticipantSettings() {
+            try {
+                const token = localStorage.getItem('authToken');
+                
+                if (!token) {
+                    return;
+                }
+                
+                // Send update request
+                const response = await fetch('/api/participants', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        trackingColor: selectedColor
+                    })
+                });
+                
+                if (!response.ok) {
+                    console.error('Failed to update participant settings');
+                }
+            } catch (error) {
+                console.error('Error updating participant settings:', error);
+            }
+        }
+        
+        // Logout
+        function logout() {
+            // Disconnect from tracking server
+            window.trackingCommunication.disconnect();
+            
+            // Stop tracking
+            if (isTracking) {
+                window.gpsTracking.stopTracking();
+            }
+            
+            // Clear local storage
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('userSailNumber');
+            
+            // Redirect to login page
+            window.location.href = 'login.html';
+        }
+    </script>

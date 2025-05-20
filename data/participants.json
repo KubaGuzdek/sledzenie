@@ -1,0 +1,55 @@
+[
+  {
+    "id": "448f3620-23ca-4ab5-be53-f0dbd628a8d0",
+    "username": "admin",
+    "password": "admin123",
+    "name": "Administrator",
+    "role": "organizer",
+    "createdAt": "2025-05-17T19:43:44.358Z"
+  },
+  {
+    "id": "0b671cee-85fb-4373-a502-dd745b62cf41",
+    "username": "user1",
+    "password": "password",
+    "name": "Jan Kowalski",
+    "sailNumber": "POL-123",
+    "trackingColor": "#1a73e8",
+    "role": "participant",
+    "isActive": false,
+    "position": null,
+    "speed": 0,
+    "distance": 0,
+    "lastUpdate": null,
+    "createdAt": "2025-05-17T19:43:44.359Z"
+  },
+  {
+    "id": "3ee3c72b-4cdc-4691-bfb5-5108588f0d37",
+    "username": "user2",
+    "password": "password",
+    "name": "Anna Nowak",
+    "sailNumber": "POL-456",
+    "trackingColor": "#4caf50",
+    "role": "participant",
+    "isActive": false,
+    "position": null,
+    "speed": 0,
+    "distance": 0,
+    "lastUpdate": null,
+    "createdAt": "2025-05-17T19:43:44.359Z"
+  },
+  {
+    "id": "cb4994b4-a1c8-49cb-9606-df3c3bf24e3c",
+    "username": "user3",
+    "password": "password",
+    "name": "Piotr Wiśniewski",
+    "sailNumber": "POL-789",
+    "trackingColor": "#f44336",
+    "role": "participant",
+    "isActive": false,
+    "position": null,
+    "speed": 0,
+    "distance": 0,
+    "lastUpdate": null,
+    "createdAt": "2025-05-17T19:43:44.359Z"
+  }
+]
