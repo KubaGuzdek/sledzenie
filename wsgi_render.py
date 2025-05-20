@@ -108,6 +108,7 @@ def run_websocket_server():
         server.handle_client,
         "0.0.0.0",  # Listen on all interfaces
         port,       # Port number
+        path="/ws"  # Use a specific path for WebSocket connections
     )
     
     logger.info(f"Starting WebSocket server on port {port}")

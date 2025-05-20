@@ -65,7 +65,7 @@ async def run_websocket_server(port=8765):
     server = TrackingServer()
     logger.info(f"Uruchamianie serwera WebSocket na porcie {port}")
     
-    async with websockets.serve(server.handle_client, "localhost", port):
+    async with websockets.serve(server.handle_client, "localhost", port, path="/ws"):
         logger.info(f"Serwer WebSocket uruchomiony na ws://localhost:{port}")
         await asyncio.Future()  # Uruchom serwer w nieskończoność
 
@@ -210,7 +210,7 @@ async def main():
                 const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
                 const host = window.location.hostname;
                 const port = 8765; // Port WebSocket
-                const url = `${protocol}//${host}:${port}`;
+                const url = `${protocol}//${host}:${port}/ws`;
                 
                 log(`Łączenie z serwerem WebSocket: ${url}`);
                 
