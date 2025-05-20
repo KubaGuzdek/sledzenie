@@ -100,8 +100,8 @@ def run_websocket_server():
     server = TrackingServer()
     logger.info("WebSocket server created")
     
-    # Get port from environment variable or use default
-    port = int(os.environ.get('PORT', 8765))
+# Get port from environment variable or use default
+    port = int(os.environ.get('PORT', 10000))
     
     # Start server
     start_server = websockets.serve(
