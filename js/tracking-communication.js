@@ -39,8 +39,8 @@ window.trackingCommunication = (function() {
         } else if (window.location.hostname.includes('onrender.com')) {
             // We're on Render.com, use secure WebSocket with hardcoded URL
             // Render.com uses HTTPS, so we need to use WSS (secure WebSocket)
-            url = `wss://${window.location.hostname}:10000/ws`;
-            console.log('Using Render.com WebSocket server with secure connection (WSS)');
+            url = "wss://sledzenie.onrender.com:10000/ws";
+            console.log('Using hardcoded Render.com WebSocket server URL: ' + url);
         } else {
             // Local development
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
