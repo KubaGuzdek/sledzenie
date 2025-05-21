@@ -206,8 +206,8 @@ async def main():
         // Funkcja łącząca z serwerem WebSocket
         function connect() {
             try {
-                // Utwórz URL WebSocket - dla Render.com używamy hardcoded URL
-                const url = "wss://sledzenie.onrender.com:10000/ws";
+                // Utwórz URL WebSocket - dla Render.com używamy standardowego URL bez portu
+                const url = "wss://sledzenie.onrender.com/ws";
                 
                 log(`Łączenie z serwerem WebSocket: ${url}`);
                 

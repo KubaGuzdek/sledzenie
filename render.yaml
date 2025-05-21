@@ -1,16 +1,26 @@
 # Render.yaml configuration file
 services:
-  # Web service for the frontend and WebSocket server
+  # Web service for the frontend static files
   - type: web
     name: king-of-the-bay
+    env: static
+    buildCommand: echo "Static site ready"
+    staticPublishPath: ./
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+    healthCheckPath: /
+  
+  # Background Worker for WebSocket server
+  - type: worker
+    name: king-of-the-bay-websocket
     env: python
     buildCommand: pip install -r requirements.txt
     startCommand: python websocket_server.py
     envVars:
       - key: PYTHON_VERSION
         value: 3.9.0
-    healthCheckPath: /
-    # Ensure WebSockets are enabled
-    websocket: true
-    # Use port 10000 for WebSocket server
-    port: 10000
