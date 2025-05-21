@@ -12,3 +12,5 @@ services:
     healthCheckPath: /
     # Ensure WebSockets are enabled
     websocket: true
+    # Use port 10000 for WebSocket server
+    port: 10000
