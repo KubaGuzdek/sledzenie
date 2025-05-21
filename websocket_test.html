@@ -147,9 +147,19 @@
         function connect() {
             try {
                 // Get server URL
-                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                const host = 'localhost:8765';
-                const url = `${protocol}//${host}`;
+                let url;
+                
+                if (window.location.hostname.includes('onrender.com')) {
+                    // We're on Render.com, use secure WebSocket
+                    url = "wss://sledzenie.onrender.com/ws";
+                    log('Używam URL dla Render.com');
+                } else {
+                    // Local development
+                    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                    const host = 'localhost:10000';
+                    url = `${protocol}//${host}/ws`;
+                    log('Używam lokalnego URL');
+                }
                 
                 log(`Łączenie z serwerem: ${url}`);
                 
