@@ -37,10 +37,10 @@ window.trackingCommunication = (function() {
             url = `${protocol}//${window.location.host}`;
             console.log('Using PythonAnywhere WebSocket server');
         } else if (window.location.hostname.includes('onrender.com')) {
-            // We're on Render.com, use WebSocket server on the same domain
+            // We're on Render.com, use WebSocket server on the same domain with /ws path
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            url = `${protocol}//${window.location.host}`;
-            console.log('Using Render.com WebSocket server');
+            url = `${protocol}//${window.location.host}/ws`;
+            console.log('Using Render.com WebSocket server with /ws path');
         } else {
             // Local development
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
