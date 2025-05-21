@@ -232,6 +232,12 @@ class TrackingServer:
     
     async def handle_client(self, websocket, path):
         """Handle a client connection"""
+        # Check if the path is correct for Render.com
+        if path != "/" and path != "/ws":
+            logging.warning(f"Rejected connection with invalid path: {path}")
+            return
+            
+        logging.info(f"Connection accepted with path: {path}")
         connection_id = await self.register(websocket)
         
         try:
