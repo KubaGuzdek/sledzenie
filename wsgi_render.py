@@ -97,7 +97,7 @@ application = create_wsgi_app()
 def run_http_server():
     """Run the HTTP server"""
     # Get port from environment variable or use default
-    port = int(os.environ.get('PORT', 10000))
+    port = int(os.environ.get('PORT', 8765))
     
     # Create an aiohttp web application
     app = web.Application()
@@ -113,7 +113,7 @@ def run_http_server():
 async def run_websocket_server():
     """Run the WebSocket server"""
     # Get port from environment variable or use default
-    port = int(os.environ.get('PORT', 10000))
+    port = int(os.environ.get('PORT', 8765))
     
     # Create WebSocket server
     server = TrackingServer()
