@@ -6,13 +6,10 @@ This file is used by Render.com to serve both the WebSocket server and the stati
 import os
 import sys
 import mimetypes
-import threading
 import asyncio
-import websockets
 import logging
 import json
 from aiohttp import web
-from concurrent.futures import ThreadPoolExecutor
 
 # Configure logging
 logging.basicConfig(
@@ -93,68 +90,99 @@ def create_wsgi_app():
 # Create the WSGI application
 application = create_wsgi_app()
 
-# Function to run the HTTP server
-def run_http_server():
-    """Run the HTTP server"""
-    # Get port from environment variable or use default
-    port = int(os.environ.get('PORT', 8765))
+# WebSocket connection handler
+async def websocket_handler(request):
+    """Handle WebSocket connections"""
+    ws = web.WebSocketResponse()
+    await ws.prepare(request)
     
-    # Create an aiohttp web application
+    logger.info(f"WebSocket connection established from {request.remote}")
+    
+    # Create TrackingServer instance
+    server = TrackingServer()
+    
+    # Register the connection
+    connection_id = None
+    
+    try:
+        # Create a custom send method for the WebSocket
+        async def custom_send(message):
+            await ws.send_str(message)
+        
+        # Create a custom WebSocket object that matches what TrackingServer expects
+        class CustomWebSocket:
+            async def send(self, message):
+                await custom_send(message)
+        
+        custom_ws = CustomWebSocket()
+        
+        # Register the connection
+        connection_id = await server.register(custom_ws)
+        
+        # Process messages
+        async for msg in ws:
+            if msg.type == web.WSMsgType.TEXT:
+                try:
+                    # Parse message
+                    data = json.loads(msg.data)
+                    message_type = data.get("type")
+                    
+                    # Handle message based on type
+                    if message_type == "auth":
+                        await server.handle_auth(connection_id, data)
+                    elif message_type == "position_update":
+                        await server.handle_position_update(connection_id, data)
+                    elif message_type == "sos":
+                        await server.handle_sos(connection_id, data)
+                    elif message_type == "ping":
+                        await server.handle_ping(connection_id, data)
+                    else:
+                        logger.warning(f"Unknown message type: {message_type}")
+                
+                except json.JSONDecodeError:
+                    logger.error(f"Invalid JSON: {msg.data}")
+                except Exception as e:
+                    logger.error(f"Error handling message: {e}")
+            elif msg.type == web.WSMsgType.ERROR:
+                logger.error(f"WebSocket connection closed with exception {ws.exception()}")
+    
+    except Exception as e:
+        logger.error(f"Error in websocket_handler: {e}")
+    
+    finally:
+        # Unregister the connection
+        if connection_id:
+            await server.unregister(connection_id)
+        
+        logger.info(f"WebSocket connection closed from {request.remote}")
+    
+    return ws
+
+# Create and run the aiohttp application
+async def create_app():
+    """Create and configure the aiohttp application"""
     app = web.Application()
     
-    # Add routes for static files
+    # Add routes
+    app.router.add_get('/ws', websocket_handler)
     app.router.add_static('/', path)
     
-    # Start the server
-    logger.info(f"Starting HTTP server on port {port}")
-    web.run_app(app, port=port)
-
-# Function to run the WebSocket server
-async def run_websocket_server():
-    """Run the WebSocket server"""
-    # Get port from environment variable or use default
-    port = int(os.environ.get('PORT', 8765))
-    
-    # Create WebSocket server
-    server = TrackingServer()
-    logger.info("WebSocket server created")
-    
-    # Start server
-    async with websockets.serve(
-        server.handle_client,
-        "0.0.0.0",  # Listen on all interfaces
-        port,       # Port number
-        path="/ws"  # Use a specific path for WebSocket connections
-    ):
-        logger.info(f"WebSocket server started on port {port} with path /ws")
-        await asyncio.Future()  # Run forever
+    return app
 
 # Main function
 if __name__ == "__main__":
+    # Get port from environment variable or use default
+    port = int(os.environ.get('PORT', 8765))
+    
+    logger.info(f"Starting server on port {port}")
     logger.info("King Of theBay application started")
     
-    # Run the HTTP server in a separate thread
-    with ThreadPoolExecutor(max_workers=1) as executor:
-        executor.submit(run_http_server)
-        
-        # Run the WebSocket server in the main thread
-        asyncio.run(run_websocket_server())
+    # Run the application
+    web.run_app(create_app(), port=port)
 else:
-    # For WSGI mode, we need to start the WebSocket server in a background thread
-    async def start_websocket_server():
-        await run_websocket_server()
-    
-    # Create a new event loop for the WebSocket server
-    websocket_loop = asyncio.new_event_loop()
-    
-    # Run the WebSocket server in a separate thread
-    def run_websocket_server_thread():
-        asyncio.set_event_loop(websocket_loop)
-        websocket_loop.run_until_complete(start_websocket_server())
-    
-    websocket_thread = threading.Thread(target=run_websocket_server_thread)
-    websocket_thread.daemon = True
-    websocket_thread.start()
+    # For WSGI mode, we need to create the application
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    app = loop.run_until_complete(create_app())
     
     logger.info("King Of theBay application started (WSGI mode)")
-    logger.info("WebSocket server running in background thread")
