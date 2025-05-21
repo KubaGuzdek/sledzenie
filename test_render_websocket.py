@@ -65,8 +65,8 @@ async def run_websocket_server(port=10000):
     server = TrackingServer()
     logger.info(f"Uruchamianie serwera WebSocket na porcie {port}")
     
-    async with websockets.serve(server.handle_client, "localhost", port):
-        logger.info(f"Serwer WebSocket uruchomiony na ws://localhost:{port} (use /ws path for Render.com)")
+    async with websockets.serve(server.handle_client, "", port):
+        logger.info(f"Serwer WebSocket uruchomiony na porcie {port} (use /ws path for Render.com)")
         await asyncio.Future()  # Uruchom serwer w nieskończoność
 
 # Funkcja główna
