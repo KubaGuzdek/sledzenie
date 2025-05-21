@@ -282,10 +282,10 @@ async def main():
     async with websockets.serve(
         server.handle_client,
         "0.0.0.0",  # Listen on all interfaces
-        8765,       # Port number
+        10000,      # Port number (Render.com uses port 10000)
         # ssl=ssl_context  # Uncomment for SSL
     ):
-        logging.info("Server started on ws://0.0.0.0:8765 (use /ws path for Render.com)")
+        logging.info("Server started on ws://0.0.0.0:10000 (use /ws path for Render.com)")
         await asyncio.Future()  # Run forever
 
 if __name__ == "__main__":

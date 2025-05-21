@@ -60,7 +60,7 @@ def run_http_server(port=8000):
     httpd.serve_forever()
 
 # Funkcja uruchamiająca serwer WebSocket
-async def run_websocket_server(port=8765):
+async def run_websocket_server(port=10000):
     """Uruchom serwer WebSocket na podanym porcie"""
     server = TrackingServer()
     logger.info(f"Uruchamianie serwera WebSocket na porcie {port}")
@@ -94,7 +94,7 @@ async def main():
     logger.info(f"Serwer HTTP uruchomiony w tle na porcie {http_port}")
     
     # Uruchom serwer WebSocket
-    websocket_port = 8765
+    websocket_port = 10000
     websocket_task = asyncio.create_task(run_websocket_server(websocket_port))
     
     # Otwórz przeglądarkę z testową stroną
@@ -209,7 +209,7 @@ async def main():
                 // Utwórz URL WebSocket
                 const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
                 const host = window.location.hostname;
-                const port = 8765; // Port WebSocket
+                const port = 10000; // Port WebSocket
                 const url = `${protocol}//${host}:${port}/ws`;
                 
                 log(`Łączenie z serwerem WebSocket: ${url}`);
